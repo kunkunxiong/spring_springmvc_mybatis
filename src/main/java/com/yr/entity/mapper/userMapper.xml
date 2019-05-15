@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yr.mybitis.UserInterface"><!-- 这里是接口的路径 -->
+
+	<!-- 开启二级缓存 -->
+	<cache></cache>
+
+	<!-- 模糊查询 -->
+	<sql id="searchs">
+		<where>
+			<if test="t.user.name != null and t.user.name != ''">
+				and name like '%${t.user.name}%'
+			</if>
+			<if test="t.startBirthday != null and t.startBirthday != ''">
+				<!-- &gt;=意为大于等于 -->
+				and birthday &gt;= '${t.startBirthday}' 
+			</if>
+			<if test="t.endBirthday != null and t.endBirthday != ''">
+				<!-- &lt;=意为小于等于 -->
+				and birthday &lt;= '${t.endBirthday}'
+			</if>
+			<if test="t.user.addr != null and t.user.addr != ''"> 
+				and addr like '%${t.user.addr}%'
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 查询总条数 -->
+	<select id="getCount" parameterType="userPojo" resultType="java.lang.Integer">
+		select count(*) from user
+		<include refid="searchs"></include>
+	</select>
+	
+	<!-- 取别名 -->
+	<resultMap type="userPojo" id="userPojoMap">
+		<id column="id" property="user.id"/>
+		<result column="name" property="user.name"/>
+		<result column="sex" property="user.sex"/>
+		<result column="addr" property="user.addr"/>
+		<result column="birthday" property="user.birthday"/>
+		<result column="email" property="user.email"/>
+		<result column="state" property="user.state"/>
+		<result column="password" property="user.password"/>
+	</resultMap>
+	
+	<!-- 分页查询所有数据 -->
+	<select id="query" parameterType="userPojo" resultMap="userPojoMap">
+		select * from user
+		<include refid="searchs"></include>
+		<if test="t.order == 0">
+			order by id asc limit #{limitNum},#{pageSize}
+		</if>
+		<if test="t.order == 1">
+			order by id desc limit #{limitNum},#{pageSize}
+		</if>
+	</select>
+	
+	<!-- 添加用户数据 -->
+	<insert id="add" parameterType="user">
+		insert into user(name,sex,addr,birthday,email,state,password)values(#{name},#{sex},#{addr},#{birthday},#{email},1,#{password})
+	</insert>
+	
+	<!-- 根据id查询用户数据 -->
+	<select id="getById" parameterType="java.lang.Integer" resultType="user">
+		select * from user where id = #{id}
+	</select>
+	
+	<!-- 修改用户数据 -->
+	<update id="update" parameterType="user">
+		update user set name=#{name},sex=#{sex},addr=#{addr},birthday=#{birthday},email=#{email},state=#{state},password=#{password} where id=#{id}
+	</update>
+	
+	<!-- 删除用户数据 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from user where id = #{id}
+	</delete>
+	
+</mapper>
